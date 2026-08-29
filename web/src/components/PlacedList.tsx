@@ -77,6 +77,17 @@ export function PlacedList() {
     setConfirming(null);
   };
 
+  // Two-step, like the per-row delete, and it names the number it is about to destroy
+  // rather than asking "are you sure?" about nothing in particular. Arming resets on
+  // mouse-out so it cannot sit primed waiting for a stray click.
+  const [armed, setArmed] = useState(false);
+  const removeAll = async () => {
+    setArmed(false);
+    setLit(null);
+    await fetchNui('signs:overview:deleteAll');
+    setSigns([]);
+  };
+
   return (
     <>
       <div className="sa-search">
@@ -86,6 +97,19 @@ export function PlacedList() {
           placeholder="Filter by text or id…"
           onChange={(e) => setQuery(e.target.value)}
         />
+        {signs.length > 0 && (
+          <button
+            className={`sa-rowbtn ${armed ? 'sa-rowbtn--danger' : 'sa-rowbtn--ghost'}`}
+            onClick={() => (armed ? void removeAll() : setArmed(true))}
+            onMouseLeave={() => setArmed(false)}
+            title={armed
+              ? 'Click again to delete every sign on the server'
+              : 'Delete every sign on the server'}
+          >
+            <Trash2 size={14} strokeWidth={2.5} />
+            {armed ? `Delete all ${signs.length}?` : 'Delete all'}
+          </button>
+        )}
         <button className="sa-iconbtn" onClick={refresh} title="Refresh" disabled={busy}>
           <RefreshCw size={15} className={busy ? 'sa-spin' : undefined} />
         </button>

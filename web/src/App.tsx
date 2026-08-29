@@ -12,6 +12,16 @@ import {
 import { ANIM_MODES, isDynamic } from '@/lib/anim';
 import { SIGN_COLOURS, alpha, chrome, colourHex } from '@/theme/palette';
 
+/**
+ * Cold-start height for the Placed tab, px.
+ *
+ * The Placed tab matches whatever the Build tab measured, but opening straight onto
+ * Placed via /signs means Build has never rendered and there is nothing to match yet.
+ * Without a floor the panel would collapse to the height of an empty list. This is the
+ * Build tab's real measured height and it is superseded the moment Build is shown once.
+ */
+const BUILD_HEIGHT_FLOOR = 992;
+
 interface OpenPayload {
   tab?: Tab;
   draft?: Partial<Draft>;
@@ -25,16 +35,25 @@ export default function App() {
   const {
     open, tab, draft, limits, measure, selected, signs, editing,
     openPanel, setTab, close, patch, setText, select, paint, setMeasure, cancelEdit,
-    placement, setPlacementMode,
+    placement, setPlacementMode, buildHeight, setBuildHeight,
   } = useBuilder();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const morphRef = useRef<HTMLDivElement>(null);
   const [bodyHeight, setBodyHeight] = useState<number | undefined>(undefined);
-  // The Build tab is the taller, more variable pane, so it sets the panel height and
-  // the Placed tab matches it -- the panel then stops resizing as you switch tabs.
-  const [buildHeight, setBuildHeight] = useState<number | undefined>(undefined);
   const tabRef = useRef(tab);
   tabRef.current = tab;
+
+  // Ultra widens the size slider's ceiling. Off by default because almost every sign
+  // is built in the normal range, and stretching one slider all the way to the ultra
+  // maximum leaves that range a sliver of travel at the far left.
+  const [ultra, setUltra] = useState(false);
+
+  // Turn it on by itself for a sign that is already bigger than the normal range --
+  // loading a 60 m sign into a slider that stops at 10 would show the thumb pinned at
+  // the end, and the first nudge would silently shrink the sign by 50 m.
+  useEffect(() => {
+    if (draft.size > limits.maxSize) setUltra(true);
+  }, [draft.size, limits.maxSize]);
 
   // Animate the panel's height as well as its width, otherwise switching tabs snaps
   // the box to a new height mid-slide and the whole transition reads as broken.
@@ -51,7 +70,7 @@ export default function App() {
       // Remember the Build tab's height so the Placed tab can match it. Only sampled
       // on Build, because on Placed the inner element is stretched to whatever height
       // we already imposed -- reading it back there would just echo our own value.
-      if (tabRef.current === 'build') setBuildHeight(h);
+      if (tabRef.current === 'build' && h > 0) setBuildHeight(h);
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -186,7 +205,7 @@ export default function App() {
 
         <div
           className="sa-morph"
-          style={{ height: tab === 'placed' ? (buildHeight ?? bodyHeight) : bodyHeight }}
+          style={{ height: tab === 'placed' ? (buildHeight ?? BUILD_HEIGHT_FLOOR) : bodyHeight }}
         >
           <div ref={morphRef} className={tab === 'placed' ? 'sa-morph__inner is-placed' : 'sa-morph__inner'}>
             {/* Keyed so React remounts it on a tab change and the entry animation
@@ -366,8 +385,30 @@ export default function App() {
               />
 
               <Slider
-                label="Size" value={draft.size} min={limits.minSize} max={limits.maxSize} step={0.05}
-                format={(v) => `${v.toFixed(2)} m caps`} onChange={(size) => patch({ size })}
+                label="Size"
+                value={draft.size}
+                min={limits.minSize}
+                max={ultra ? limits.maxSizeUltra : limits.maxSize}
+                // Coarser steps once the range is 12x longer, or a single pixel of
+                // travel would jump by more than a normal sign is tall.
+                step={ultra ? 0.5 : 0.05}
+                format={(v) => `${v.toFixed(2)} m caps`}
+                onChange={(size) => patch({ size })}
+                action={limits.maxSizeUltra > limits.maxSize ? (
+                  <button
+                    type="button"
+                    className={`sa-toggle ${ultra ? 'is-active' : ''}`}
+                    onClick={() => {
+                      // Turning it off pulls an oversized sign back into range, so the
+                      // slider thumb and the sign never disagree about the value.
+                      if (ultra && draft.size > limits.maxSize) patch({ size: limits.maxSize });
+                      setUltra(!ultra);
+                    }}
+                    title={`Unlock sizes up to ${limits.maxSizeUltra} m`}
+                  >
+                    Ultra
+                  </button>
+                ) : undefined}
               />
               <Slider
                 label="Thickness" value={draft.thickness} min={limits.minThickness}

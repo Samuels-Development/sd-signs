@@ -283,6 +283,41 @@ body {
   color: var(--sa-muted);
 }
 
+.sa-slider__aside {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* Small pill toggle living in a slider's head — currently the size range unlock.
+   Scaled off the readout beside it rather than the row buttons below, so it reads as
+   part of the label line and not as another action competing with them. */
+.sa-toggle {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--sa-line);
+  background: transparent;
+  color: var(--sa-faint);
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 120ms;
+}
+
+.sa-toggle:hover {
+  color: var(--sa-muted);
+  border-color: var(--sa-faint);
+}
+
+.sa-toggle.is-active {
+  background: var(--sa-raise);
+  border-color: #7d8895;
+  color: var(--sa-text);
+}
+
 .sa-slider__value {
   font-size: 12px;
   font-weight: 600;

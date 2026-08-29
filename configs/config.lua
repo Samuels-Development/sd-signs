@@ -38,11 +38,19 @@ Config.Limits = {
     maxRows = 3,
     --- Cap height in metres. 1.0 == the source models' native size.
     ---
-    --- The top of this slider is deliberately ridiculous. For scale: the Hollywood
-    --- sign's letters are about 13.7 m, and the Maze Bank tower is roughly 200 m, so
-    --- 120 m caps is a letter over half the height of the tallest building in Los
-    --- Santos. Verified in game rather than assumed -- the props scale and render
-    --- correctly at the top of this range.
+    --- Cap height in metres, for the slider's NORMAL range. 10 m is already a tall
+    --- letter -- most signage, from a doorway plaque to a shopfront to the side of a
+    --- building, lives well below it -- so this is where the slider spends its travel.
+    minSize = 0.2,
+    maxSize = 10.0,
+
+    --- Ceiling once the builder's **Ultra** toggle is on, in metres.
+    ---
+    --- Kept behind a toggle because stretching one slider to 120 m makes the useful
+    --- range a thumbnail's worth of travel at the far left, and almost every sign is
+    --- built in that range. For scale: the Hollywood sign's letters are about 13.7 m
+    --- and the Maze Bank tower is roughly 200 m, so 120 m caps is a letter over half
+    --- the height of the tallest building in Los Santos.
     ---
     --- Size costs nothing extra: a sign is one entity per letter whatever its scale,
     --- and collision is off. Two things do scale though, and both have their own
@@ -52,8 +60,11 @@ Config.Limits = {
     ---     pop in while you are standing inside it;
     ---   * the live preview can only back off as far as LivePreview.maxDistance, so
     ---     past a point it shows you the middle of the sign rather than all of it.
-    minSize = 0.2,
-    maxSize = 120.0,
+    ---
+    --- The server clamps to THIS value, not to maxSize: the toggle is a UI convenience
+    --- and the server has no idea whether it was on, so it can only enforce the
+    --- absolute ceiling. Set both to the same number to remove ultra sizes entirely.
+    maxSizeUltra = 120.0,
     --- Multiplier on the models' 0.12 m depth.
     minThickness = 0.25,
     maxThickness = 8.0,

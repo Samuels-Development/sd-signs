@@ -216,6 +216,13 @@ RegisterNUICallback('signs:overview:delete', function(data, cb)
     cb({ ok = true })
 end)
 
+---Wipe every sign. The panel confirms before it gets here; the server re-checks ACE.
+RegisterNUICallback('signs:overview:deleteAll', function(_, cb)
+    World.highlight(nil)   -- nothing left to point at
+    TriggerServerEvent('sd-signs:server:removeAll')
+    cb({ ok = true })
+end)
+
 ---Pick a sign out of the world without closing the panel, so you can walk down the
 ---list and confirm which row is which before editing or deleting one.
 RegisterNUICallback('signs:overview:highlight', function(data, cb)

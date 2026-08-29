@@ -155,7 +155,11 @@ function Sign.normalise(raw)
         anim      = anim,
         animSpeed = animSpeed,
         spin      = spin,
-        size      = clampNumber(raw.size,      L.minSize,      L.maxSize,      config.Defaults.size),
+        -- Clamped to the ULTRA ceiling, not the normal one. The builder's ultra toggle
+        -- only widens a slider; the server cannot know whether it was on, so the
+        -- absolute maximum is the only thing it can meaningfully enforce.
+        size      = clampNumber(raw.size, L.minSize, L.maxSizeUltra or L.maxSize,
+            config.Defaults.size),
         thickness = clampNumber(raw.thickness, L.minThickness, L.maxThickness, config.Defaults.thickness),
         tracking  = clampNumber(raw.tracking,  L.minTracking,  L.maxTracking,  config.Defaults.tracking),
         x         = clampNumber(raw.x, -10000.0, 10000.0, 0.0),

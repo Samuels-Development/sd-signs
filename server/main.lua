@@ -290,6 +290,34 @@ RegisterNetEvent('sd-signs:server:remove', function(id)
     end
 end)
 
+---Wipe every sign on the server.
+---
+---Deliberately not filtered to the caller's own signs: this is an admin tool behind
+---the same ACE as everything else, and "delete all" that quietly left other admins'
+---signs standing would be worse than not having it. The panel asks for confirmation.
+RegisterNetEvent('sd-signs:server:removeAll', function()
+    local src = source
+    if not allowed(src) then
+        log.warn('player %s tried to wipe every sign without %s',
+            tostring(src), tostring(config.Ace))
+        return
+    end
+
+    local n = 0
+    for _ in pairs(signs) do n = n + 1 end
+    if n == 0 then return end
+
+    signs = {}
+    TriggerClientEvent('sd-signs:client:sync', -1, {})
+    log.info('net', 'player %s removed ALL %d sign(s)', tostring(src), n)
+    if config.Persist then
+        -- DELETE rather than TRUNCATE: TRUNCATE also resets AUTO_INCREMENT, so the
+        -- next sign placed would reuse id 1 and collide with anything still holding a
+        -- reference to the old one.
+        MySQL.query('DELETE FROM `sd_signs`')
+    end
+end)
+
 -- Load on a short delay rather than off onResourceStart: oxmysql may not have
 -- finished coming up when this resource starts, and a query issued too early is
 -- exactly the kind of failure that leaves no trace.

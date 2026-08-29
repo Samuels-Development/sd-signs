@@ -8,6 +8,8 @@ export interface Limits {
   maxLength: number;
   minSize: number;
   maxSize: number;
+  /** Ceiling once the builder's Ultra toggle is on. */
+  maxSizeUltra: number;
   minThickness: number;
   maxThickness: number;
   minTracking: number;
@@ -84,7 +86,8 @@ export interface PlacedSign {
 const DEFAULT_LIMITS: Limits = {
   maxLength: 24,
   minSize: 0.2,
-  maxSize: 120.0,
+  maxSize: 10.0,
+  maxSizeUltra: 120.0,
   minThickness: 0.25,
   maxThickness: 8.0,
   minTracking: -0.3,
@@ -150,12 +153,20 @@ interface BuilderState {
   signs: PlacedSign[];
   /** Sign id being edited, or null when building a new one. */
   editing: number | null;
+  /**
+   * Measured height of the Build tab. The Placed tab matches it so the panel does not
+   * resize as you switch, and it lives in the store rather than component state so it
+   * survives the panel closing -- otherwise every reopen straight onto Placed would be
+   * a cold start again.
+   */
+  buildHeight: number | null;
 
   openPanel: (p: {
     tab?: Tab; draft?: Partial<Draft>; limits?: Partial<Limits>;
     signs?: PlacedSign[]; editing?: number | null; placement?: Partial<Placement>;
   }) => void;
   setPlacementMode: (mode: PlacementMode) => void;
+  setBuildHeight: (h: number) => void;
   setTab: (tab: Tab) => void;
   edit: (sign: PlacedSign) => void;
   cancelEdit: () => void;
@@ -179,6 +190,7 @@ export const useBuilder = create<BuilderState>((set) => ({
   },
   limits: DEFAULT_LIMITS,
   placement: DEFAULT_PLACEMENT,
+  buildHeight: null,
   measure: { width: 0, letters: 0 },
   selected: null,
   signs: [],
@@ -197,6 +209,8 @@ export const useBuilder = create<BuilderState>((set) => ({
 
   setPlacementMode: (mode) =>
     set((s) => ({ placement: { ...s.placement, mode } })),
+
+  setBuildHeight: (buildHeight) => set({ buildHeight }),
 
   setTab: (tab) => set({ tab, selected: null }),
 
