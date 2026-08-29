@@ -3,13 +3,13 @@
 # sd-signs
 
 **3D signs for FiveM. Type it, colour it, place it.**
-Real extruded letter props — not a texture on a plane — in 129 glyphs, ten colours and a
+Real extruded letter props — not a texture on a plane — in 191 glyphs, ten colours and a
 matte or neon finish. Up to three rows of text. Size, depth and letter spacing are sliders,
 every letter can be its own colour, and the whole sign can pulse, cycle, wave or spin. Drag it
 into place by aim or with a gizmo, saved to the database, admin-gated by default.
 
-Colour is a runtime tint rather than baked geometry, so the whole palette ships in **258 models
-and about 5 MB** — and a ten-colour animation costs no more entities than a static sign.
+Colour is a runtime tint rather than baked geometry, so the whole palette ships in **382 models
+and about 8 MB** — and a ten-colour animation costs no more entities than a static sign.
 
 If sd-signs is useful to you, please ⭐ the repo. Issues and pull requests are always welcome.
 
@@ -52,7 +52,7 @@ there is a render distance and a length cap.
 
 | | |
 |---|---|
-| **129 glyphs** | `A–Z`, `a–z`, `0–9` and 67 symbols — punctuation, brackets, currency, arrows, fractions and maths |
+| **191 glyphs** | `A–Z`, `a–z`, `0–9`, 67 symbols — punctuation, brackets, currency, arrows, fractions and maths — and 62 accented letters covering German, Nordic, French, Spanish, Portuguese, Italian, Dutch and Icelandic |
 | **10 colours** | white, red, orange, amber, yellow, green, cyan, blue, purple, pink |
 | **2 finishes** | `painted` (matte) or `neon` (emissive face that glows at night) |
 | **Up to 3 rows** | press Enter for a new row; rows stack and centre on each other |
@@ -129,7 +129,7 @@ the NUI is not a security boundary.
 
 ## How the props work
 
-129 glyphs in two finishes is **258 models, about 5 MB** — and that covers all ten colours,
+191 glyphs in two finishes is **382 models, about 8 MB** — and that covers all ten colours,
 because colour is not in the geometry.
 
 Both finishes use a GTA *tint* shader (`default_tnt.sps`, `emissive_tnt.sps`) carrying a
@@ -140,7 +140,7 @@ SetObjectTextureVariation(entity, 7)   -- blue, on any glyph
 ```
 
 So "red A" and "blue A" are the same streamed model, told apart by one integer at spawn
-time. Baking colour into each model instead would mean 2580 models and ~44 MB.
+time. Baking colour into each model instead would mean 3820 models and ~65 MB.
 
 Three consequences worth knowing:
 
@@ -163,7 +163,7 @@ letter depth. It is a four-step pipeline:
 
 | Step | Run in | Produces |
 |---|---|---|
-| `build_alphabet3d.py` | Blender | the 129 glyph meshes and the palette texture |
+| `build_alphabet3d.py` | Blender | the 191 glyph meshes and the palette texture |
 | `measure_glyphs.py` | Blender | `glyph_metrics.json` — advance widths measured off the real meshes |
 | `gen_glyphs_lua.js` | node | `shared/glyphs.lua` |
 | `export_fivem.py` | Blender ([Sollumz](https://github.com/Sollumz/Sollumz)) | `stream/*.ydr` and the `.ytyp` |
@@ -174,7 +174,7 @@ want the intermediates written somewhere other than `assets/blender/build`. See 
 several, and most of them fail silently.
 
 Changing the font is supported but not free: it changes every advance width, so all four steps
-have to be re-run, and the replacement must cover all 129 glyphs and be a *static* Bold. It is
+have to be re-run, and the replacement must cover all 191 glyphs and be a *static* Bold. It is
 also worth changing the `.sa-preview__text` font stack in `web/src/styles.css` (and `CAP_PER_EM` in `web/src/components/SignPreview.tsx`) to match, or the panel
 preview quietly stops agreeing with what actually gets placed.
 

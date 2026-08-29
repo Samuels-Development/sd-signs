@@ -1,9 +1,9 @@
 # Alphabet 3D — emissive channel letters
 
-A–Z, a–z, 0–9 and 67 symbols as extruded 3D "channel letter" props, in 10 emissive
-colours.
+A–Z, a–z, 0–9, 67 symbols and 62 accented letters as extruded 3D "channel letter"
+props, in 10 emissive colours.
 
-**1,290 character/colour variants, built from 129 meshes, 2 materials and 1 texture.**
+**1,910 character/colour variants, built from 191 meshes, 2 materials and 1 texture.**
 
 ![chart](preview_chart.png)
 ![grid](preview_grid.png)
@@ -12,7 +12,7 @@ colours.
 
 ## The trick: colour is a per-object property, not geometry
 
-The obvious way to get "a blue A and a green B" is 1290 models, or at least 129 models ×
+The obvious way to get "a blue A and a green B" is 1910 models, or at least 191 models ×
 10 materials. Both are wasteful. Instead:
 
 1. All 10 colours live in **one 512×512 texture** (`textures/alphabet_palette.png`),
@@ -29,7 +29,7 @@ exact same mesh datablock and still render different colours. Every variant is a
 The result: `alphabet3d.blend` holds ~1,420 objects and weighs well under a megabyte.
 
 ```
-129 glyph meshes   ── shared by ──▶  1290 showcase objects + demo objects
+191 glyph meshes   ── shared by ──▶  1910 showcase objects + demo objects
   1 palette texture                   (each carries only an int: color_id)
   2 live materials   (+2 baked, for export)
 ```
@@ -55,21 +55,21 @@ add more colours by extending `PALETTE` in the script, no geometry changes neede
 | Path | What |
 |---|---|
 | `alphabet3d.blend` | The working file. Open this. |
-| `build_alphabet3d.py` | **1.** Rebuilds the 129 glyph meshes, palette and materials. |
+| `build_alphabet3d.py` | **1.** Rebuilds the 191 glyph meshes, palette and materials. |
 | `measure_glyphs.py` | **2.** Measures the built meshes into `glyph_metrics.json`. |
 | `gen_glyphs_lua.js` | **3.** Turns those metrics into `sd-signs/shared/glyphs.lua` (node, not Blender). |
-| `export_fivem.py` | **4.** `main()` exports all 258 `.ydr` + the `.ytyp` and ships them to `stream/`. |
+| `export_fivem.py` | **4.** `main()` exports all 382 `.ydr` + the `.ytyp` and ships them to `stream/`. |
 | `fonts/Montserrat-Bold.ttf` | The source face, with its `OFL.txt`. |
 | `glyph_metrics.json` | Generated. Advance widths in cap-height units — the contract between the props and the in-game layout. |
 | `textures/alphabet_palette.png` | The single 512×512 palette. Also packed into the .blend. |
-| `export/alphabet_<colour>.glb` | All 129 glyphs in one colour, ×10 files. Only used for the render previews. |
+| `export/alphabet_<colour>.glb` | All 191 glyphs in one colour, ×10 files. Only used for the render previews. |
 | `preview_hero.png` `preview_chart.png` `preview_grid.png` | Rendered previews. |
 | `preview_back.png` `preview_edge.png` | Rear and edge-on views (see *Solid geometry*). |
 
 ### Collections in the .blend
 
-- **`AL_Master`** — the 62 source glyphs. This is the actual model library.
-- **`AL_Showcase`** — every variant, laid out as a 129 × 10 grid (near `x = -105`).
+- **`AL_Master`** — the 191 source glyphs. This is the actual model library.
+- **`AL_Showcase`** — every variant, laid out as a 191 × 10 grid (near `x = -105`).
 - **`AL_Demo`** — a small sign showing mixed per-letter colours.
 
 ---
@@ -123,7 +123,8 @@ the default `0` is near-black by design.
 - **Letters face −Y** (Blender's front view, numpad 1) and the **back face sits exactly
   on the Y = 0 plane**, so they mount flush against a wall with no offset fiddling.
 - Depth is 0.12 m + 0.02 m of bevel = 0.140 m total.
-- ~1 300 tris per glyph, 18 090 verts for the whole 62-character set. Raise `RES_U`
+- ~1 300 tris per glyph for the base Latin set (accented glyphs run higher — `Å` and the
+  tilde caps carry the most curve). Raise `RES_U`
   in the config for smoother curves if you need hero-quality closeups.
 
 ### Naming
@@ -132,11 +133,22 @@ the default `0` is near-black by design.
 exists because Windows filenames are case-insensitive — `A.glb` and `a.glb` would
 collide on a per-glyph export, `U_A.glb` and `L_A.glb` don't.
 
+Accented letters take an ASCII slug from `ACCENTS` but **keep** the case tag, because
+they have both cases and collide exactly like `A`/`a`: `AL_U_ADIAER` / `AL_L_ADIAER`,
+exported as `sd_a3d_uadiaer` / `sd_a3d_ladiaer`. The slug itself is case-free, so the
+pair shares one entry in the table. This is why accents are a separate dict from
+`SYMBOLS` rather than more entries in it — a symbol resolves to `AL_S_<SLUG>` and has
+no case to preserve, so routing `Ä` and `ä` through it would collapse them into one
+name and silently drop a mesh.
+
+`ß` and `ÿ` have no uppercase inside Latin-1 (`ẞ` and `Ÿ` live elsewhere), so they only
+ever produce an `L_` name. No special case is needed: `'ß'.islower()` is already true.
+
 ---
 
 ## Exports
 
-`export/*.glb` holds one file per colour, each containing all 129 glyphs laid out as a
+`export/*.glb` holds one file per colour, each containing all 191 glyphs laid out as a
 readable chart. Exported formats can't carry Blender object-attributes, so
 `bake_mesh()` writes the palette offset into real UVs and swaps in the two
 `*_Baked` materials. The texture is embedded in each GLB with `NEAREST` filtering and
@@ -166,7 +178,7 @@ lowercase letters, digits and underscores.
 
 ### Colour is a tint index, not geometry
 
-Blender gets 1290 variants from 129 meshes by reading an object property in the shader.
+Blender gets 1910 variants from 191 meshes by reading an object property in the shader.
 GTA cannot read Blender custom attributes — but it has its own version of the same idea,
 so the trick survives the export rather than being baked away.
 
@@ -179,8 +191,8 @@ row per entity:
 SetObjectTextureVariation(entity, 7)   -- blue, on any glyph, at no extra cost
 ```
 
-So one `.ydr` per glyph per finish covers the whole palette: **258 models, ~4 MB**. Baking
-colour into UVs instead would need 2580 models and ~44 MB, and would make an animated sign
+So one `.ydr` per glyph per finish covers the whole palette: **382 models, ~8 MB**. Baking
+colour into UVs instead would need 3820 models and ~65 MB, and would make an animated sign
 cost one entity per letter *per colour* rather than one per letter.
 
 Adding a colour is now editing `PALETTE` and re-running — no geometry changes, and the
@@ -227,13 +239,13 @@ Everything is at the top of `build_alphabet3d.py`: `FONT_PATH`, `CAP_H`, `DEPTH`
 >
 > Replacing it has three requirements, and two of them fail silently:
 >
-> 1. **All 129 glyphs.** Probe the font's `cmap` first — Roboto Bold, for one, has no
+> 1. **All 191 glyphs.** Probe the font's `cmap` first — Roboto Bold, for one, has no
 >    left or right arrow, and Blender exports a missing glyph as a `.notdef` box
 >    rather than complaining.
 > 2. **A *static* Bold.** Blender loads a variable font's default instance, which is
 >    Regular, so a `Montserrat[wght].ttf` would quietly give you thin letters.
 > 3. **Re-run the whole pipeline.** A different face means different advance widths,
->    so `glyph_metrics.json`, `shared/glyphs.lua` and all 258 `.ydr` go stale.
+>    so `glyph_metrics.json`, `shared/glyphs.lua` and all 382 `.ydr` go stale.
 
 ---
 

@@ -4,7 +4,7 @@ lua54 'yes'
 
 name 'sd-signs'
 author 'Samuel#0008'
-version '1.0.0'
+version '1.1.0'
 description '3D emissive channel-letter signs: type it, place it, scale it'
 
 shared_scripts {

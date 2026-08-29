@@ -39,7 +39,7 @@ EXP_DIR = os.path.join(BUILD_DIR, "export")
 # redistributing derived artwork (these meshes), which a system font like Arial does
 # not, so the font ships with the toolchain rather than being read out of C:\Windows.
 #
-# Swapping it is supported but not free: every replacement must cover all 129 glyphs
+# Swapping it is supported but not free: every replacement must cover all 191 glyphs
 # (Roboto Bold, for one, has no left/right arrow), and changing the face changes every
 # advance width, so build -> gen_glyphs_lua.js -> export_fivem.py must all be re-run.
 # It must also be a *static* Bold: Blender loads a variable font's default instance,
@@ -113,8 +113,39 @@ SYMBOLS = {
     'µ': 'micro',    'ª': 'ordfa',   'º': 'ordfm',
 }
 
+# Accented letters need an ASCII slug for the same reason symbols do -- a GTA model
+# name is [a-z0-9_] only, so 'sd_a3d_lä' is not a legal name -- but they are letters,
+# not symbols, and must keep the U_/L_ case tag: 'Ä' and 'ä' collide as filenames on
+# Windows exactly like 'A' and 'a' do. So the slug here is CASE-FREE and the existing
+# u/l tag supplies the case: ä -> sd_a3d_ladiaer, Ä -> sd_a3d_uadiaer.
+#
+# ß and ÿ have no uppercase in this block (ẞ and Ÿ are outside Latin-1), so they simply
+# never produce a 'u' name. No special case needed: 'ß'.islower() is already True.
+#
+# Every codepoint here was verified present in Montserrat Bold by probing the font's
+# cmap -- a missing glyph is exported as a .notdef box, silently, not as an error.
+ACCENTS = {
+    'À': 'agrave',  'à': 'agrave',   'Á': 'aacute',  'á': 'aacute',
+    'Â': 'acirc',   'â': 'acirc',    'Ã': 'atilde',  'ã': 'atilde',
+    'Ä': 'adiaer',  'ä': 'adiaer',   'Å': 'aring',   'å': 'aring',
+    'Æ': 'aelig',   'æ': 'aelig',    'Ç': 'ccedil',  'ç': 'ccedil',
+    'È': 'egrave',  'è': 'egrave',   'É': 'eacute',  'é': 'eacute',
+    'Ê': 'ecirc',   'ê': 'ecirc',    'Ë': 'ediaer',  'ë': 'ediaer',
+    'Ì': 'igrave',  'ì': 'igrave',   'Í': 'iacute',  'í': 'iacute',
+    'Î': 'icirc',   'î': 'icirc',    'Ï': 'idiaer',  'ï': 'idiaer',
+    'Ð': 'eth',     'ð': 'eth',      'Ñ': 'ntilde',  'ñ': 'ntilde',
+    'Ò': 'ograve',  'ò': 'ograve',   'Ó': 'oacute',  'ó': 'oacute',
+    'Ô': 'ocirc',   'ô': 'ocirc',    'Õ': 'otilde',  'õ': 'otilde',
+    'Ö': 'odiaer',  'ö': 'odiaer',   'Ø': 'oslash',  'ø': 'oslash',
+    'Ù': 'ugrave',  'ù': 'ugrave',   'Ú': 'uacute',  'ú': 'uacute',
+    'Û': 'ucirc',   'û': 'ucirc',    'Ü': 'udiaer',  'ü': 'udiaer',
+    'Ý': 'yacute',  'ý': 'yacute',   'Þ': 'thorn',   'þ': 'thorn',
+    'ß': 'szlig',   'ÿ': 'ydiaer',
+}
+
+
 CHARSET = (list(string.ascii_uppercase) + list(string.ascii_lowercase)
-           + list(string.digits) + list(SYMBOLS.keys()))
+           + list(string.digits) + list(SYMBOLS.keys()) + list(ACCENTS.keys()))
 
 
 def obj_name(ch):
@@ -124,9 +155,16 @@ def obj_name(ch):
 
     SYMBOLS is checked first on purpose: Python considers 'micro' and the feminine
     ordinal to be lowercase letters, so a letters-first test would misroute them.
+
+    ACCENTS comes next and keeps the case tag rather than replacing it, because an
+    accented letter has both cases and they collide as filenames just like 'A'/'a':
+    'AL_U_ADIAER' vs 'AL_L_ADIAER'. Routing them through the AL_S_ symbol namespace
+    instead would give the pair one shared name and lose one of the two meshes.
     """
     slug = SYMBOLS.get(ch)
     if slug: return "AL_S_" + slug.upper()
+    accent = ACCENTS.get(ch)
+    if accent: return ("AL_U_" if ch.isupper() else "AL_L_") + accent.upper()
     if ch.isupper(): return "AL_U_" + ch
     if ch.islower(): return "AL_L_" + ch.upper()
     if ch.isdigit(): return "AL_D_" + ch

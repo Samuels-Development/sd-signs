@@ -44,11 +44,18 @@ def base_model(char):
     SYMBOLS is checked first for the same reason it is there: Python classes the
     micro sign and the feminine ordinal as lowercase letters, so a letters-first
     test would misroute them into the 'l' namespace and collide with real letters.
+
+    ACCENTS is checked next, and unlike SYMBOLS it keeps the u/l tag: the slug is
+    case-free, so 'Ä' -> sd_a3d_uadiaer and 'ä' -> sd_a3d_ladiaer. Without it the raw
+    fallback below would emit 'sd_a3d_lä', and a GTA model name is [a-z0-9_] only.
     """
     slug = AL["SYMBOLS"].get(char)
     if slug:
         return "sd_a3d_s%s" % slug
     tag = "u" if char.isupper() else ("l" if char.islower() else "d")
+    accent = AL["ACCENTS"].get(char)
+    if accent:
+        return "sd_a3d_%s%s" % (tag, accent)
     return "sd_a3d_%s%s" % (tag, char.lower())
 
 

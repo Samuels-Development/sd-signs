@@ -5,7 +5,7 @@ Run from inside Blender (the Blender MCP or the Scripting tab):
 
     import runpy
     E = runpy.run_path(r"...\export_fivem.py")
-    E["export_style"]("painted")     # 129 .ydr, every colour, one finish
+    E["export_style"]("painted")     # 191 .ydr, every colour, one finish
     E["write_ytyp"]()                # one .ytyp covering everything exported so far
 
 Model naming is  sd_a3d_<tag><char>[_neon]  (tag: u/l/d), matching Glyphs.model()
@@ -14,8 +14,8 @@ case-insensitive, so 'A' and 'a' would collide as files.
 
 Colour is NOT in the name and NOT in the geometry. Both finishes use a '_tnt' shader
 carrying a tint palette, and the game selects a row per entity via
-SET_OBJECT_TEXTURE_VARIATION -- so 129 glyphs x 2 finishes covers the whole palette in
-258 models rather than 2580, and an animated sign costs one entity per letter instead
+SET_OBJECT_TEXTURE_VARIATION -- so 191 glyphs x 2 finishes covers the whole palette in
+382 models rather than 3820, and an animated sign costs one entity per letter instead
 of one per letter per colour.
 """
 
@@ -156,15 +156,21 @@ def model_name(char, style="painted"):
     '%', and Python also classes the micro sign and feminine ordinal as lowercase
     letters, so a letters-first test would misroute them into the 'l' namespace.
 
+    ACCENTS is checked next, and unlike SYMBOLS it keeps the u/l tag: the slug is
+    case-free, so 'Ä' -> sd_a3d_uadiaer and 'ä' -> sd_a3d_ladiaer. Without it the raw
+    fallback below would emit 'sd_a3d_lä', and a GTA model name is [a-z0-9_] only.
+
+
     Colour used to be the last segment. It is now a runtime tint index, so a glyph is
-    one model per finish rather than one per finish per colour: 258 instead of 2580.
+    one model per finish rather than one per finish per colour: 382 instead of 3820.
     """
     slug = AL["SYMBOLS"].get(char)
     if slug:
         base = "sd_a3d_s%s" % slug
     else:
         tag = "u" if char.isupper() else ("l" if char.islower() else "d")
-        base = "sd_a3d_%s%s" % (tag, char.lower())
+        accent = AL["ACCENTS"].get(char)
+        base = "sd_a3d_%s%s" % (tag, accent or char.lower())
     return base + ("_neon" if style == "neon" else "")
 
 
@@ -388,7 +394,7 @@ def write_ytyp(names=None):
         yt = sc.ytyps[sc.ytyp_index]
         yt.name = YTYP_NAME
         # Deselect only the previous object rather than calling select_all(DESELECT):
-        # that walks every object in the scene, and with ~2600 objects and 1290
+        # that walks every object in the scene, and with ~3800 objects and 1910
         # archetypes to create it dominates the runtime.
         bpy.ops.object.select_all(action='DESELECT')
         prev = None
@@ -438,7 +444,7 @@ def purge():
 def main(styles=("painted", "neon"), clean=True):
     """Full FiveM export: every glyph, in both finishes. Colour is not baked.
 
-    129 glyphs x 2 finishes is 258 drawables. Run it from Blender after
+    191 glyphs x 2 finishes is 382 drawables. Run it from Blender after
     build_alphabet3d.py has populated the scene.
 
     Order matters in two places:

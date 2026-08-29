@@ -919,6 +919,440 @@
    "w": 0.5615,
    "top": 1.0814,
    "bot": 0.5886
+  },
+  {
+   "ch": "À",
+   "model": "sd_a3d_uagrave",
+   "w": 1.1523,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "à",
+   "model": "sd_a3d_lagrave",
+   "w": 0.75,
+   "top": 1.0829,
+   "bot": -0.0215
+  },
+  {
+   "ch": "Á",
+   "model": "sd_a3d_uaacute",
+   "w": 1.1523,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "á",
+   "model": "sd_a3d_laacute",
+   "w": 0.75,
+   "top": 1.0829,
+   "bot": -0.0215
+  },
+  {
+   "ch": "Â",
+   "model": "sd_a3d_uacirc",
+   "w": 1.1523,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "â",
+   "model": "sd_a3d_lacirc",
+   "w": 0.75,
+   "top": 1.0829,
+   "bot": -0.0215
+  },
+  {
+   "ch": "Ã",
+   "model": "sd_a3d_uatilde",
+   "w": 1.1523,
+   "top": 1.31,
+   "bot": -0.01
+  },
+  {
+   "ch": "ã",
+   "model": "sd_a3d_latilde",
+   "w": 0.75,
+   "top": 1.0915,
+   "bot": -0.0215
+  },
+  {
+   "ch": "Ä",
+   "model": "sd_a3d_uadiaer",
+   "w": 1.1523,
+   "top": 1.2957,
+   "bot": -0.01
+  },
+  {
+   "ch": "ä",
+   "model": "sd_a3d_ladiaer",
+   "w": 0.75,
+   "top": 1.0815,
+   "bot": -0.0215
+  },
+  {
+   "ch": "Å",
+   "model": "sd_a3d_uaring",
+   "w": 1.1523,
+   "top": 1.4114,
+   "bot": -0.01
+  },
+  {
+   "ch": "å",
+   "model": "sd_a3d_laring",
+   "w": 0.75,
+   "top": 1.2014,
+   "bot": -0.0215
+  },
+  {
+   "ch": "Æ",
+   "model": "sd_a3d_uaelig",
+   "w": 1.5171,
+   "top": 1.01,
+   "bot": -0.01
+  },
+  {
+   "ch": "æ",
+   "model": "sd_a3d_laelig",
+   "w": 1.3429,
+   "top": 0.79,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ç",
+   "model": "sd_a3d_uccedil",
+   "w": 0.9784,
+   "top": 1.0272,
+   "bot": -0.3414
+  },
+  {
+   "ch": "ç",
+   "model": "sd_a3d_lccedil",
+   "w": 0.7966,
+   "top": 0.79,
+   "bot": -0.3414
+  },
+  {
+   "ch": "È",
+   "model": "sd_a3d_uegrave",
+   "w": 0.7943,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "è",
+   "model": "sd_a3d_legrave",
+   "w": 0.83,
+   "top": 1.0829,
+   "bot": -0.0214
+  },
+  {
+   "ch": "É",
+   "model": "sd_a3d_ueacute",
+   "w": 0.7943,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "é",
+   "model": "sd_a3d_leacute",
+   "w": 0.83,
+   "top": 1.0829,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ê",
+   "model": "sd_a3d_uecirc",
+   "w": 0.7943,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "ê",
+   "model": "sd_a3d_lecirc",
+   "w": 0.83,
+   "top": 1.0829,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ë",
+   "model": "sd_a3d_uediaer",
+   "w": 0.7943,
+   "top": 1.2957,
+   "bot": -0.01
+  },
+  {
+   "ch": "ë",
+   "model": "sd_a3d_lediaer",
+   "w": 0.83,
+   "top": 1.0815,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ì",
+   "model": "sd_a3d_uigrave",
+   "w": 0.4846,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "ì",
+   "model": "sd_a3d_ligrave",
+   "w": 0.4846,
+   "top": 1.0829,
+   "bot": -0.01
+  },
+  {
+   "ch": "Í",
+   "model": "sd_a3d_uiacute",
+   "w": 0.4846,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "í",
+   "model": "sd_a3d_liacute",
+   "w": 0.4846,
+   "top": 1.0829,
+   "bot": -0.01
+  },
+  {
+   "ch": "Î",
+   "model": "sd_a3d_uicirc",
+   "w": 0.6198,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "î",
+   "model": "sd_a3d_licirc",
+   "w": 0.5431,
+   "top": 1.0829,
+   "bot": -0.01
+  },
+  {
+   "ch": "Ï",
+   "model": "sd_a3d_uidiaer",
+   "w": 0.5086,
+   "top": 1.2957,
+   "bot": -0.01
+  },
+  {
+   "ch": "ï",
+   "model": "sd_a3d_lidiaer",
+   "w": 0.4401,
+   "top": 1.08,
+   "bot": -0.01
+  },
+  {
+   "ch": "Ð",
+   "model": "sd_a3d_ueth",
+   "w": 1.16,
+   "top": 1.01,
+   "bot": -0.01
+  },
+  {
+   "ch": "ð",
+   "model": "sd_a3d_leth",
+   "w": 0.8043,
+   "top": 1.0813,
+   "bot": -0.02
+  },
+  {
+   "ch": "Ñ",
+   "model": "sd_a3d_untilde",
+   "w": 0.9371,
+   "top": 1.31,
+   "bot": -0.01
+  },
+  {
+   "ch": "ñ",
+   "model": "sd_a3d_lntilde",
+   "w": 0.8057,
+   "top": 1.0915,
+   "bot": -0.01
+  },
+  {
+   "ch": "Ò",
+   "model": "sd_a3d_uograve",
+   "w": 1.1143,
+   "top": 1.2971,
+   "bot": -0.0272
+  },
+  {
+   "ch": "ò",
+   "model": "sd_a3d_lograve",
+   "w": 0.8643,
+   "top": 1.0829,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ó",
+   "model": "sd_a3d_uoacute",
+   "w": 1.1143,
+   "top": 1.2971,
+   "bot": -0.0272
+  },
+  {
+   "ch": "ó",
+   "model": "sd_a3d_loacute",
+   "w": 0.8643,
+   "top": 1.0829,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ô",
+   "model": "sd_a3d_uocirc",
+   "w": 1.1143,
+   "top": 1.2971,
+   "bot": -0.0272
+  },
+  {
+   "ch": "ô",
+   "model": "sd_a3d_locirc",
+   "w": 0.8643,
+   "top": 1.0829,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Õ",
+   "model": "sd_a3d_uotilde",
+   "w": 1.1143,
+   "top": 1.31,
+   "bot": -0.0272
+  },
+  {
+   "ch": "õ",
+   "model": "sd_a3d_lotilde",
+   "w": 0.8643,
+   "top": 1.0915,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ö",
+   "model": "sd_a3d_uodiaer",
+   "w": 1.1143,
+   "top": 1.2957,
+   "bot": -0.0272
+  },
+  {
+   "ch": "ö",
+   "model": "sd_a3d_lodiaer",
+   "w": 0.8643,
+   "top": 1.0815,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ø",
+   "model": "sd_a3d_uoslash",
+   "w": 1.1143,
+   "top": 1.11,
+   "bot": -0.11
+  },
+  {
+   "ch": "ø",
+   "model": "sd_a3d_loslash",
+   "w": 0.8643,
+   "top": 0.8657,
+   "bot": -0.1186
+  },
+  {
+   "ch": "Ù",
+   "model": "sd_a3d_uugrave",
+   "w": 0.9257,
+   "top": 1.2971,
+   "bot": -0.0272
+  },
+  {
+   "ch": "ù",
+   "model": "sd_a3d_lugrave",
+   "w": 0.7986,
+   "top": 1.0829,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ú",
+   "model": "sd_a3d_uuacute",
+   "w": 0.9257,
+   "top": 1.2971,
+   "bot": -0.0272
+  },
+  {
+   "ch": "ú",
+   "model": "sd_a3d_luacute",
+   "w": 0.7986,
+   "top": 1.0829,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Û",
+   "model": "sd_a3d_uucirc",
+   "w": 0.9257,
+   "top": 1.2971,
+   "bot": -0.0272
+  },
+  {
+   "ch": "û",
+   "model": "sd_a3d_lucirc",
+   "w": 0.7986,
+   "top": 1.0829,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ü",
+   "model": "sd_a3d_uudiaer",
+   "w": 0.9257,
+   "top": 1.2957,
+   "bot": -0.0272
+  },
+  {
+   "ch": "ü",
+   "model": "sd_a3d_ludiaer",
+   "w": 0.7986,
+   "top": 1.0815,
+   "bot": -0.0214
+  },
+  {
+   "ch": "Ý",
+   "model": "sd_a3d_uyacute",
+   "w": 1.0425,
+   "top": 1.2971,
+   "bot": -0.01
+  },
+  {
+   "ch": "ý",
+   "model": "sd_a3d_lyacute",
+   "w": 0.9078,
+   "top": 1.0829,
+   "bot": -0.2986
+  },
+  {
+   "ch": "Þ",
+   "model": "sd_a3d_uthorn",
+   "w": 0.8872,
+   "top": 1.01,
+   "bot": -0.01
+  },
+  {
+   "ch": "þ",
+   "model": "sd_a3d_lthorn",
+   "w": 0.8572,
+   "top": 1.07,
+   "bot": -0.2871
+  },
+  {
+   "ch": "ß",
+   "model": "sd_a3d_lszlig",
+   "w": 0.8614,
+   "top": 1.0814,
+   "bot": -0.0214
+  },
+  {
+   "ch": "ÿ",
+   "model": "sd_a3d_lydiaer",
+   "w": 0.9078,
+   "top": 1.0815,
+   "bot": -0.2986
   }
  ]
 }

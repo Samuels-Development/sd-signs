@@ -67,7 +67,7 @@ p('--- Returns nil for characters the alphabet does not cover (so callers can sk
 p('---');
 p('--- Colour is deliberately absent. Both finishes carry a tint palette, so a colour');
 p('--- is chosen per entity with SetObjectTextureVariation(ent, Glyphs.tint(colour))');
-p('--- rather than by picking a different model -- 258 models instead of 2580.');
+p('--- rather than by picking a different model -- 382 models instead of 3820.');
 p('---@param char string single character');
 p('---@param style string|nil "painted" (default) or "neon"');
 p('---@return string|nil');
