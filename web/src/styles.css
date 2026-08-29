@@ -158,6 +158,45 @@ body {
   will-change: transform;
 }
 
+/* Overlaid on the preview because it acts on the preview. Bottom-right so it clears
+   the sign itself, which is centred and can be wide. */
+.sa-inspect {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--sa-line);
+  background: rgba(7, 8, 10, 0.72);
+  color: var(--sa-muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+  transition: 120ms;
+}
+
+.sa-inspect:hover {
+  color: var(--sa-text);
+  border-color: var(--sa-faint);
+}
+
+/* Out walking around the sign: the panel gets out of the way entirely rather than
+   dimming. It has no focus in this mode, so anything still on screen would be
+   furniture you cannot use, sitting in front of the thing you went to look at.
+   Kept mounted -- unmounting would drop the draft and the measured panel height. */
+.sa-root.is-inspecting {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease-out;
+}
+
 .sa-preview__baseline {
   position: absolute;
   left: 22px;

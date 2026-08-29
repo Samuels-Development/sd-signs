@@ -18,6 +18,15 @@ local built
 local shown
 ---@type boolean
 local visible = false
+---@type boolean while pinned the sign holds its world position instead of tracking
+---the camera, so you can walk around it and look at it from anywhere.
+local pinned = false
+
+---Freeze the preview where it currently stands, or let it track the camera again.
+---@param on boolean
+function Preview.pin(on)
+    pinned = on and true or false
+end
 
 ---Where the preview should sit for a sign of this width.
 ---
@@ -70,11 +79,18 @@ function Preview.show(draft)
         return
     end
 
-    local _, width = Sign.layout(record.text, record.size, record.tracking,
-        record.colour, record.colours, record.style)
-    local above, below = Sign.verticalExtent(record.text, record.size)
-    local pos, heading = anchor(width, above, below)
-    record.x, record.y, record.z, record.heading = pos.x, pos.y, pos.z, heading
+    if pinned and shown then
+        -- Hold the transform it was pinned at. Recomputing the anchor here would drag
+        -- the sign back in front of the camera the moment anything else about the
+        -- draft changed, which is the one thing pinning exists to prevent.
+        record.x, record.y, record.z, record.heading = shown.x, shown.y, shown.z, shown.heading
+    else
+        local _, width = Sign.layout(record.text, record.size, record.tracking,
+            record.colour, record.colours, record.style)
+        local above, below = Sign.verticalExtent(record.text, record.size)
+        local pos, heading = anchor(width, above, below)
+        record.x, record.y, record.z, record.heading = pos.x, pos.y, pos.z, heading
+    end
 
     -- Only respawn when the model set actually changes. Text/colour/finish/effect pick
     -- different props; size, thickness and tracking just move what is already there,
@@ -103,14 +119,22 @@ end
 CreateThread(function()
     while true do
         if visible and built and shown then
-            local _, width = Sign.layout(shown.text, shown.size, shown.tracking,
-                shown.colour, shown.colours, shown.style)
-            local above, below = Sign.verticalExtent(shown.text, shown.size)
-            local pos, heading = anchor(width, above, below)
-            shown.x, shown.y, shown.z, shown.heading = pos.x, pos.y, pos.z, heading
+            -- Pinned: leave the transform alone so the sign stays put while you walk
+            -- around it. Spin and colour effects still run -- freezing those too would
+            -- make the thing you walked over to inspect stop being the thing you built.
+            if not pinned then
+                local _, width = Sign.layout(shown.text, shown.size, shown.tracking,
+                    shown.colour, shown.colours, shown.style)
+                local above, below = Sign.verticalExtent(shown.text, shown.size)
+                local pos, heading = anchor(width, above, below)
+                shown.x, shown.y, shown.z, shown.heading = pos.x, pos.y, pos.z, heading
+            end
+            -- Read the resting heading back off the record rather than the anchor call:
+            -- while pinned there is no anchor call, and spin has to keep turning about
+            -- whatever angle the sign was pinned at.
             local spin = shown.spin or 0
             Builder.reposition(built, shown,
-                spin > 0 and (heading + spin * (GetGameTimer() / 1000.0)) % 360.0 or nil)
+                spin > 0 and (shown.heading + spin * (GetGameTimer() / 1000.0)) % 360.0 or nil)
             if Anim.isDynamic(Anim.sanitise(shown.anim)) then
                 Builder.tint(built, shown, GetGameTimer() / 1000.0)
             end

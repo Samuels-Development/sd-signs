@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Check, LayoutGrid, MapPin, Move, Palette, Sparkles, Type, X } from 'lucide-react';
+import { Check, LayoutGrid, MapPin, Move, Palette, PersonStanding, Sparkles, Type, X } from 'lucide-react';
 import { PlacedList } from '@/components/PlacedList';
 import { SignPreview } from '@/components/SignPreview';
 import { Slider } from '@/components/Slider';
@@ -80,6 +80,11 @@ export default function App() {
 
   useNuiEvent<OpenPayload>('signs:open', (d) => openPanel(d ?? {}));
   useNuiEvent('signs:close', () => close());
+
+  // Walking around a pinned preview. Lua owns the mode -- it is what holds the focus
+  // and the keybind -- so this only mirrors what it reports.
+  const [inspecting, setInspecting] = useState(false);
+  useNuiEvent<{ active: boolean }>('signs:inspect', (d) => setInspecting(!!d?.active));
 
   const dismiss = useCallback(() => {
     close();
@@ -177,7 +182,7 @@ export default function App() {
   const paintingHex = colourHex(selected !== null ? colourAt(draft, selected) : draft.colour);
 
   return (
-    <div className="sa-root">
+    <div className={`sa-root ${inspecting ? 'is-inspecting' : ''}`}>
       {/* One panel that widens on the Placed tab rather than two separate menus. */}
       <div className={`sa-panel ${tab === 'placed' ? 'is-wide' : ''}`}>
         <header className="sa-header">
@@ -226,6 +231,21 @@ export default function App() {
               <PlacedList />
             ) : (
               <>
+            {/* Sits on the preview because it is about the preview: it pins the sign
+                and hands control back so you can walk round it. Hidden while editing a
+                placed sign -- there is no floating preview then, the real sign is being
+                re-rendered where it already stands. */}
+            {editing === null && (
+              <button
+                className="sa-inspect"
+                onClick={() => void fetchNui('signs:builder:inspect')}
+                title="Pin the sign and walk around it"
+              >
+                <PersonStanding size={14} strokeWidth={2.5} />
+                Walk around
+              </button>
+            )}
+
             <SignPreview
               text={draft.text}
               colourOf={(i) => colourAt(draft, i)}

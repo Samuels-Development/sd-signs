@@ -49,10 +49,60 @@ local function payload(tab, draft, editingId)
     }
 end
 
+---@type boolean true while the player is walking around a pinned preview
+local inspecting = false
+
+--- Control 38 (E). Checked as a DISABLED control while inspecting, so pressing it
+--- comes back to the builder instead of also vaulting a fence or entering a car.
+local INSPECT_KEY = 38
+
+---Hand control back to the player so they can walk around the preview.
+---
+---The panel is dropped rather than kept clickable: the sign is pinned in the world and
+---the whole point is to look at it from somewhere other than arm's length, which needs
+---real mouse look. A cursor competing with the camera would make that worse, not better.
+---@param on boolean
+function Nui.inspect(on)
+    if not open or inspecting == on then return end
+    inspecting = on
+
+    Preview.pin(on)
+    SetNuiFocus(not on, not on)
+    SendNUIMessage({ action = 'signs:inspect', data = { active = on } })
+
+    if not on then
+        lib.hideTextUI()
+        return
+    end
+
+    lib.showTextUI('**Walk around the sign**  \n[E] back to the builder',
+        { position = 'left-center' })
+
+    CreateThread(function()
+        while inspecting and open do
+            DisableControlAction(0, INSPECT_KEY, true)
+            if IsDisabledControlJustPressed(0, INSPECT_KEY) then
+                Nui.inspect(false)
+                return
+            end
+            Wait(0)
+        end
+        -- Panel closed underneath us: drop the prompt rather than leaving it on screen.
+        if inspecting then Nui.inspect(false) end
+    end)
+end
+
 ---Close the panel and release focus. Idempotent.
 function Nui.close()
     if not open then return end
     open = false
+    -- Before the focus reset below, so leaving inspect mode cannot re-grab focus for a
+    -- panel that is on its way out.
+    if inspecting then
+        inspecting = false
+        Preview.pin(false)
+        lib.hideTextUI()
+    end
     Preview.hide()
     World.clearOverrides()   -- an unsaved edit must not linger in the world
     -- The highlight is a list affordance, so it goes with the list. Leaving a sign
@@ -106,6 +156,12 @@ end)
 RegisterNUICallback('signs:close', function(_, cb)
     Nui.close()
     cb({ ok = true })
+end)
+
+---Drop the panel and pin the preview so the player can walk around it.
+RegisterNUICallback('signs:builder:inspect', function(_, cb)
+    cb({ ok = true })
+    Nui.inspect(true)
 end)
 
 ---Switch between raycast and gizmo placement. Client-side and session-only: the mode
