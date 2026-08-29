@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build + checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install deps
+        working-directory: web
+        run: npm ci
+
+      # `build` is `tsc --noEmit && vite build`, so this typechecks as well as bundles.
+      - name: Build NUI
+        working-directory: web
+        run: npm run build
+
+      - name: Install Lua
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends lua5.4
+
+      # loadfile() rather than `luac -p` so this needs only the interpreter, which the lua5.4
+      # package definitely ships. Catches syntax errors that would otherwise only show up as a
+      # failed resource start in someone's server console.
+      #
+      # Two non-obvious details, both of which broke this the first time:
+      #   - the path is interpolated into the chunk as a [[long string]] rather than read from
+      #     arg[1], because `lua -e chunk file` treats `file` as a script to run and leaves
+      #     arg[1] nil, at which point loadfile() silently falls back to reading stdin;
+      #   - `< /dev/null` keeps lua from consuming the loop's stdin, which is the find pipe.
+      #
+      # Note this is stock Lua, not CFX's: if a safe-navigation `?.` ever lands in a .lua file
+      # here it will fail this step even though the server would run it fine.
+      - name: Syntax-check Lua
+        run: |
+          fail=0
+          while IFS= read -r file; do
+            if lua5.4 -e "local f, err = loadfile([[$file]]); if not f then io.stderr:write(err, '\n'); os.exit(1) end" < /dev/null; then
+              echo "ok  $file"
+            else
+              echo "::error file=$file::Lua syntax error"
+              fail=1
+            fi
+          done < <(find . -name '*.lua' -not -path './web/*')
+          exit $fail
+
+      # shared/glyphs.lua is generated from the Blender metrics, and a hand-edit to it would
+      # be silently overwritten by the next pipeline run. Cheap guard: the glyph count in the
+      # committed Lua has to match the committed metrics JSON.
+      - name: Check generated glyph table is in sync
+        run: |
+          json=$(grep -o '"ch":' assets/blender/glyph_metrics.json | wc -l)
+          lua=$(grep -cE "^\s*\['.*'\] = \{ model =" shared/glyphs.lua)
+          echo "glyph_metrics.json: $json   shared/glyphs.lua: $lua"
+          if [ "$json" != "$lua" ]; then
+            echo "::error::shared/glyphs.lua is out of sync with glyph_metrics.json - re-run gen_glyphs_lua.js"
+            exit 1
+          fi

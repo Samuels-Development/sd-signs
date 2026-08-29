@@ -1,0 +1,24 @@
+# Git's binary detection is reliable for these, but being explicit costs nothing and this
+# repo is 2580 binary props checked out on Windows, where core.autocrlf is usually on --
+# the one configuration where a misdetected binary gets its bytes rewritten on checkout.
+*.ydr  binary
+*.ytyp binary
+*.ytd  binary
+*.dds  binary
+*.ttf  binary
+*.blend binary
+
+# Normalise line endings for everything textual so the repo is not half CRLF.
+*.lua   text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.py    text eol=lf
+*.yml   text eol=lf
+
+# Generated: mark it so GitHub collapses the diff and keeps it out of language stats.
+shared/glyphs.lua linguist-generated=true

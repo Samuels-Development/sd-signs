@@ -1,0 +1,25 @@
+node_modules/
+
+# Build output. Not committed: the Release workflow builds the NUI fresh from source and
+# attaches it to the release zip, so the repo never carries a compiled artifact that can
+# silently drift from web/src.
+web/build/
+
+# Blender toolchain intermediates.
+#
+# The props under stream/ ARE committed -- they are what the resource actually streams,
+# and nobody should need Blender to run this resource. Everything below is only used to
+# *produce* them, is fully regenerable by re-running the pipeline, and is large:
+#
+#   build/fivem/   Sollumz staging copies of the very .ydr already in stream/
+#   build/export/  glTF, written only so the render previews have something to shade
+#   *.blend        the scene itself: build_alphabet3d.py rebuilds it from scratch, and a
+#                  1.4 MB binary that changes wholesale on every run is the worst possible
+#                  thing to keep in git history
+assets/blender/build/
+*.blend
+*.blend1
+
+.DS_Store
+Thumbs.db
+*.log

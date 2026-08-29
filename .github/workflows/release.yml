@@ -1,0 +1,101 @@
+name: Release
+
+# Fires when a GitHub Release is published (Releases > Draft a new release > Publish).
+# Builds the NUI fresh and attaches a lean, drop-in resource zip to that release.
+on:
+  release:
+    types: [published]
+  # Re-package an already published release without unpublishing it, for when the
+  # packaging itself was wrong rather than the code.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to package (e.g. v1.0.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: build + package
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build NUI
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      # Explicit allowlist of runtime files -> dist/sd-signs/ so the zip extracts to a
+      # correctly named resource folder. web/src, node_modules and the dev configs are
+      # intentionally left out, and so is assets/ -- the Blender toolchain is for people
+      # regenerating the props, not for people running the resource, and shipping it would
+      # roughly double the download for no runtime benefit.
+      #
+      # stream/ is the one big inclusion and is not optional: it is the 2580 letter props,
+      # and without them every sign spawns as nothing at all.
+      - name: Stage resource
+        run: |
+          mkdir -p dist/sd-signs/web
+          cp fxmanifest.lua README.md LICENSE dist/sd-signs/
+          cp -r client server shared configs stream dist/sd-signs/
+          cp -r web/build dist/sd-signs/web/build
+
+      # The staging list above is an allowlist, so a new top-level directory would be dropped
+      # from the zip in silence and every `require` against it would fail on start. Cross-check
+      # it against what fxmanifest.lua actually declares, and fail the build instead.
+      #
+      # ytyp is in the extension list on purpose: it is declared as a data_file, and a zip
+      # missing it streams every prop correctly while CreateObject still cannot resolve a
+      # single model name.
+      - name: Verify staged resource
+        run: |
+          missing=0
+          paths=$(grep -oE "'[^']+\.(lua|json|html|js|css|png|jpg|webp|svg|woff2?|mp3|ytyp)'" fxmanifest.lua \
+            | tr -d "'" | grep -v '^@' | sed 's|/\*\*.*||; s|/\*.*||' | sort -u)
+          for p in $paths; do
+            if [ ! -e "dist/sd-signs/$p" ]; then
+              echo "::error::fxmanifest.lua declares '$p' but it is not in the staged resource"
+              missing=1
+            fi
+          done
+          if [ "$missing" != 0 ]; then
+            echo "Staged resource is incomplete - add the missing path to the Stage resource step."
+            exit 1
+          fi
+          echo "All fxmanifest paths present:"
+          echo "$paths"
+
+      # The props are the bulk of the download and the easiest thing to get wrong, so assert
+      # the count rather than trusting that `cp -r stream` did what it looked like it did.
+      - name: Verify prop set
+        run: |
+          ydr=$(find dist/sd-signs/stream -name '*.ydr' | wc -l)
+          echo "staged props: $ydr .ydr + $(find dist/sd-signs/stream -name '*.ytyp' | wc -l) .ytyp"
+          if [ "$ydr" -lt 2580 ]; then
+            echo "::error::expected 2580 .ydr props, staged $ydr"
+            exit 1
+          fi
+
+      - name: Zip
+        run: |
+          cd dist
+          zip -qr "../sd-signs-${TAG}.zip" sd-signs
+
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${TAG}" "sd-signs-${TAG}.zip" --clobber

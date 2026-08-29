@@ -1,0 +1,911 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sa-canvas: #07080a;
+  --sa-panel: #101317;
+  --sa-raise: #171b21;
+  --sa-line: #252b33;
+  --sa-text: #e8ebef;
+  --sa-muted: #8b95a1;
+  --sa-faint: #5b646e;
+}
+
+/* Tailwind's preflight is disabled (the panel is hand-written CSS), which also means
+   no global border-box reset. Without this, any element given an explicit width plus
+   padding -- buttons especially, which carry browser default padding -- ends up
+   larger than asked for and its content sits off-centre. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Barlow', system-ui, -apple-system, sans-serif;
+  color: var(--sa-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- shell ---------- */
+.sa-root {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4.5vw;
+  pointer-events: none;
+}
+
+.sa-panel {
+  pointer-events: auto;
+  /* Wide enough that the Build tab fits without scrolling to reach the lower
+     controls; the Placed tab widens further still for the list. */
+  width: 560px;
+  max-height: 92vh;
+  /* One panel for both tabs: it widens for the list rather than swapping menus. */
+  transition: width 220ms cubic-bezier(0.22, 0.8, 0.3, 1);
+  background: var(--sa-panel);
+  border: 1px solid var(--sa-line);
+  border-radius: 10px;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.66),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  /* x hidden clips the preview to the rounded corners; y auto keeps the panel
+     usable at short window heights instead of running off screen. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  animation: sa-in 160ms ease-out;
+}
+
+@keyframes sa-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+}
+
+/* ---------- header ---------- */
+.sa-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--sa-line);
+}
+
+.sa-header__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sa-header h1 {
+  margin: 0;
+  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.sa-iconbtn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;          /* buttons carry default UA padding; it offsets the glyph */
+  line-height: 0;      /* stops the inline-SVG baseline adding a descender gap */
+  border: 1px solid var(--sa-line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sa-muted);
+  cursor: pointer;
+  transition: 120ms;
+}
+
+.sa-iconbtn svg {
+  display: block;
+}
+
+.sa-iconbtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.sa-iconbtn:hover {
+  color: var(--sa-text);
+  border-color: var(--sa-faint);
+}
+
+/* ---------- preview ---------- */
+.sa-preview {
+  position: relative;
+  height: 158px;
+  border-bottom: 1px solid var(--sa-line);
+  overflow: hidden;
+}
+
+/* Montserrat Bold, because that is literally the font the props were modelled
+   from -- see assets/blender/fonts/. If you regenerate the props with another face,
+   change it here too or the preview quietly stops matching what gets placed.
+   Absolutely positioned and centred by transform: as a normal flow/grid child its
+   box gets clamped to the panel width and long text spills out to the right
+   instead of scaling down. Being out of flow, offsetWidth reports the true
+   natural width, which is what the shrink-to-fit measures. */
+.sa-preview__text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  font-family: 'Montserrat', 'Helvetica Neue', Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: 64px;
+  line-height: 1.1;
+  white-space: nowrap;
+  user-select: none;
+  will-change: transform;
+}
+
+.sa-preview__baseline {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 26px;
+  height: 1px;
+  opacity: 0.45;
+}
+
+/* ---------- body ---------- */
+.sa-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sa-field__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--sa-muted);
+}
+
+.sa-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--sa-faint);
+  letter-spacing: 0.04em;
+}
+
+.sa-count.is-over {
+  color: #f14c4c;
+}
+
+/* The text field is a textarea now that signs can have rows. Resize is off because
+   dragging it fights the panel's animated height, which is driven by a
+   ResizeObserver on the content. */
+.sa-input--rows {
+  resize: none;
+  line-height: 1.35;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.sa-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 13px;
+  background: var(--sa-canvas);
+  border: 1px solid var(--sa-line);
+  border-radius: 7px;
+  color: var(--sa-text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  outline: none;
+  transition: border-color 120ms;
+}
+
+.sa-input::placeholder {
+  color: var(--sa-faint);
+}
+
+.sa-hint {
+  font-size: 11px;
+  color: var(--sa-faint);
+}
+
+/* ---------- swatches ---------- */
+.sa-swatches {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 9px;
+  padding: 2px 0;
+}
+
+.sa-swatch {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 120ms;
+}
+
+.sa-swatch:hover {
+  transform: scale(1.12);
+}
+
+.sa-swatch.is-active {
+  transform: scale(1.12);
+}
+
+/* ---------- sliders ---------- */
+.sa-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.sa-slider__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sa-slider__label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--sa-muted);
+}
+
+.sa-slider__value {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sa-slider input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+}
+
+.sa-slider input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--sa-thumb, #fff);
+  border: 2px solid var(--sa-canvas);
+  box-shadow: 0 0 10px var(--sa-thumb-glow, transparent);
+  cursor: pointer;
+}
+
+/* Two controls to a row. A slider needs track width, not height, so pairing them
+   keeps the whole Build tab above the fold instead of pushing the last controls
+   under a scroll. align-items: end keeps a slider's track level with a segmented
+   control's buttons when the two are side by side and different heights. */
+.sa-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: end;
+}
+
+.sa-pair.is-single {
+  grid-template-columns: 1fr;
+}
+
+/* ---------- readout ---------- */
+.sa-readout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  background: var(--sa-raise);
+  border: 1px solid var(--sa-line);
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--sa-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sa-readout__sep {
+  width: 1px;
+  height: 12px;
+  background: var(--sa-line);
+}
+
+/* ---------- footer ---------- */
+.sa-footer {
+  display: flex;
+  gap: 10px;
+  padding: 16px 18px;
+  border-top: 1px solid var(--sa-line);
+}
+
+.sa-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 14px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 130ms;
+}
+
+.sa-btn--ghost {
+  flex: 0 0 110px;
+  background: transparent;
+  border-color: var(--sa-line);
+  color: var(--sa-muted);
+}
+
+.sa-btn--ghost:hover {
+  color: var(--sa-text);
+  border-color: var(--sa-faint);
+}
+
+.sa-btn--go:disabled {
+  cursor: not-allowed;
+}
+
+/* ---------- per-letter colouring ---------- */
+/* Each glyph is its own span so it can carry its own colour and be clicked. */
+.sa-glyph {
+  display: inline-block;
+  transition: opacity 120ms;
+}
+
+.sa-glyph.is-clickable {
+  cursor: pointer;
+}
+
+.sa-glyph.is-clickable:hover {
+  opacity: 0.75;
+}
+
+.sa-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+
+.sa-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--sa-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* Primary button is a neutral light key, not the sign colour. */
+.sa-btn--go {
+  background: #dfe4ea;
+  color: #07080a;
+}
+
+.sa-btn--go:hover:not(:disabled) {
+  background: #fff;
+}
+
+.sa-btn--go:disabled {
+  background: #20262e;
+  color: var(--sa-faint);
+}
+
+.sa-slider__value {
+  color: var(--sa-text);
+}
+
+/* ---------- overview ---------- */
+.sa-panel.is-wide {
+  width: 760px;
+}
+
+.sa-header__tools {
+  display: flex;
+  gap: 7px;
+}
+
+.sa-badge {
+  margin-left: 2px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--sa-raise);
+  border: 1px solid var(--sa-line);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sa-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sa-spin {
+  animation: sa-rot 800ms linear infinite;
+}
+
+@keyframes sa-rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sa-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px 10px 18px;
+  border-bottom: 1px solid var(--sa-line);
+  color: var(--sa-faint);
+}
+
+.sa-search input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--sa-text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.sa-search input::placeholder {
+  color: var(--sa-faint);
+}
+
+.sa-list {
+  max-height: 58vh;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sa-empty {
+  margin: 0;
+  padding: 28px 0;
+  text-align: center;
+  color: var(--sa-faint);
+  font-size: 13px;
+}
+
+.sa-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: 'preview actions' 'meta actions';
+  gap: 4px 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: background 120ms;
+}
+
+.sa-row:hover {
+  background: var(--sa-raise);
+}
+
+.sa-row__preview {
+  grid-area: preview;
+  min-width: 0;
+}
+
+/* The mini sign is a real rendition in the sign's own colours, so the list reads
+   as "what is out there" rather than a wall of identical text rows. */
+.sa-mini {
+  font-family: 'Montserrat', 'Helvetica Neue', Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: 21px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sa-row__meta {
+  grid-area: meta;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--sa-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.sa-row__id {
+  color: var(--sa-muted);
+  font-weight: 700;
+}
+
+.sa-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--sa-line);
+}
+
+.sa-live {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(41, 242, 64, 0.12);
+  color: #29f240;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.sa-row__actions {
+  grid-area: actions;
+  display: flex;
+  gap: 6px;
+}
+
+.sa-rowbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--sa-line);
+  background: var(--sa-canvas);
+  color: var(--sa-text);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 120ms;
+}
+
+.sa-rowbtn:hover {
+  border-color: var(--sa-faint);
+}
+
+/* A row action that is currently ON -- the highlight toggle. Reads as pressed rather
+   than merely hovered, because the thing it controls is out in the world behind the
+   panel and may well be off screen. */
+.sa-rowbtn.is-active {
+  background: var(--sa-raise);
+  border-color: #7d8895;
+  color: var(--sa-text);
+}
+
+.sa-rowbtn--ghost {
+  color: var(--sa-muted);
+  padding: 7px 9px;
+}
+
+.sa-rowbtn--ghost:hover {
+  color: #f14c4c;
+  border-color: #f14c4c;
+}
+
+.sa-rowbtn--danger {
+  background: #f14c4c;
+  border-color: #f14c4c;
+  color: #07080a;
+}
+
+/* ---------- scrollbars ---------- */
+/* NUI is Chromium-only, so the -webkit- pseudo-elements are the right tool here;
+   scrollbar-width/color are kept as a harmless fallback. */
+.sa-list,
+.sa-panel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sa-line) transparent;
+}
+
+.sa-list::-webkit-scrollbar,
+.sa-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.sa-list::-webkit-scrollbar-track,
+.sa-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sa-list::-webkit-scrollbar-thumb,
+.sa-panel::-webkit-scrollbar-thumb {
+  background: #2b323b;
+  /* Transparent border + background-clip keeps the thumb visually inset from the
+     panel edge without needing a separate track element. */
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+.sa-list::-webkit-scrollbar-thumb:hover,
+.sa-panel::-webkit-scrollbar-thumb:hover {
+  background: #3e4753;
+  background-clip: content-box;
+}
+
+.sa-list::-webkit-scrollbar-thumb:active,
+.sa-panel::-webkit-scrollbar-thumb:active {
+  background: var(--sa-faint);
+  background-clip: content-box;
+}
+
+/* The arrow buttons at the ends are pure clutter at this size. */
+.sa-list::-webkit-scrollbar-button,
+.sa-panel::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* ---------- segmented control (finish) ---------- */
+.sa-seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sa-seg__btn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--sa-line);
+  background: var(--sa-canvas);
+  color: var(--sa-muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: 130ms;
+}
+
+.sa-seg__btn b {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sa-seg__btn span {
+  font-size: 10.5px;
+  color: var(--sa-faint);
+}
+
+.sa-seg__btn:hover:not(:disabled) {
+  border-color: var(--sa-faint);
+}
+
+/* An option the server cannot offer -- e.g. gizmo placement with object_gizmo
+   stopped. Shown rather than hidden so it is clear the mode exists and why it is
+   unavailable; the reason lives in the button's title. */
+.sa-seg__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sa-seg__btn.is-active {
+  background: var(--sa-raise);
+  border-color: #7d8895;
+  color: var(--sa-text);
+}
+
+.sa-neon {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(26, 230, 255, 0.12);
+  color: #1ae6ff;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- tabs ---------- */
+.sa-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.sa-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sa-faint);
+  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 140ms;
+  white-space: nowrap;
+}
+
+.sa-tab:hover {
+  color: var(--sa-muted);
+}
+
+.sa-tab.is-active {
+  background: var(--sa-raise);
+  border-color: var(--sa-line);
+  color: var(--sa-text);
+}
+
+/* A third button makes the footer tight; let the ghost shrink first. */
+.sa-btn--alt {
+  flex: 0 0 auto;
+  background: var(--sa-raise);
+  border-color: var(--sa-line);
+  color: var(--sa-text);
+}
+
+.sa-btn--alt:hover {
+  border-color: var(--sa-faint);
+}
+
+.sa-footer .sa-btn--ghost {
+  flex: 0 0 92px;
+}
+
+/* ---------- effect chips ---------- */
+.sa-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.sa-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--sa-line);
+  background: var(--sa-canvas);
+  color: var(--sa-muted);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: 130ms;
+}
+
+.sa-chip:hover {
+  border-color: var(--sa-faint);
+  color: var(--sa-text);
+}
+
+.sa-chip.is-active {
+  background: var(--sa-raise);
+  border-color: #7d8895;
+  color: var(--sa-text);
+}
+
+.sa-target--dim {
+  color: var(--sa-faint);
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- tab body height morph ---------- */
+/* Height is set imperatively from a ResizeObserver on the inner content, so both
+   axes of the panel ease together when swapping tabs instead of the height popping. */
+.sa-morph {
+  overflow: hidden;
+  transition: height 220ms cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+/* On the Placed tab the wrapper's height is pinned to whatever the Build tab measured,
+   so the pane has to fill it rather than size itself: the search bar keeps its natural
+   height and the list takes the rest, scrolling inside instead of stretching the
+   panel. max-height is cleared because a flex basis and a viewport cap would fight,
+   and the cap would win on tall windows and leave the pane short. */
+.sa-morph__inner.is-placed {
+  height: 100%;
+}
+
+/* The flex column lives on the swap wrapper, not the measured element: on the Build
+   tab the wrapper must size to its content (that measurement is what drives the
+   panel's height), so it can only be told to fill on the Placed tab, where the height
+   is already pinned from outside. */
+.sa-morph__inner.is-placed > .sa-swap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sa-morph__inner.is-placed .sa-list {
+  flex: 1 1 auto;
+  max-height: none;
+  min-height: 0;
+}
+
+/* One gesture, not three. Same curve and duration as the panel's width and the
+   wrapper's height, so the box changing shape and the content arriving are read as a
+   single movement. Direction comes from --sa-swap-from, set per tab. */
+.sa-swap {
+  animation: sa-swap-in 220ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+@keyframes sa-swap-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--sa-swap-from, 0));
+  }
+}
+
+/* Movement here is presentation, never information: every transition has a resting
+   state that says the same thing, so this cuts them all rather than substituting
+   something gentler. */
+@media (prefers-reduced-motion: reduce) {
+  .sa-swap,
+  .sa-panel,
+  .sa-morph {
+    animation-duration: 1ms;
+    transition-duration: 1ms;
+  }
+}
+
+/* ---------- spinning preview ---------- */
+.sa-preview {
+  perspective: 900px;
+}
+
+/* Rotation angle is driven from JS (see SignPreview) rather than a keyframe
+   animation, so it can be interrupted and eased back to face-on when you reach for
+   a letter. A paused keyframe would freeze at whatever angle it was at. */
+.sa-preview__spin {
+  transform-style: preserve-3d;
+  /* Rows centre on each other, matching how Sign.layout centres each row on its own
+     width in the world. */
+  text-align: center;
+}
+
+/* A row break.
+   Deliberately NOT a flex container with wrapping: making the glyphs flex items lets
+   them wrap on the container's width, so a single-row sign breaks itself into three
+   lines as soon as it is wider than the panel. A block-level element always starts a
+   new line regardless of `white-space: nowrap`, so the break alone gives rows while
+   nowrap keeps each row on one line however long it gets. */
+.sa-preview__break {
+  display: block;
+  height: 0;
+}
