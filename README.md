@@ -2,7 +2,7 @@
 
 # sd-signs
 
-**3D channel-letter signs for FiveM. Type it, colour it, place it.**
+**3D signs for FiveM. Type it, colour it, place it.**
 Real extruded letter props — not a texture on a plane — in 129 glyphs, ten colours and a
 matte or neon finish. Up to three rows of text. Size, depth and letter spacing are sliders,
 every letter can be its own colour, and the whole sign can pulse, cycle, wave or spin. Drag it
